@@ -1,0 +1,14 @@
+{
+  "status": "online",
+  "service": "AvjIAS API",
+  "version": "1.0",
+  "endpoints": {
+    "chatgpt": "/chat/gpt5.5",
+    "claude": "/chat/claude4.8",
+    "gemini": "/chat/gemini3.1"
+  },
+  "settings": {
+    "max_history_messages": 100,
+    "save_local": true
+  }
+}
