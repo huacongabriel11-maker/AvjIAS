@@ -1,89 +1,213 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AvjIAS Multi-IA Chat</title>
-  <style>
-    body { font-family: Arial, sans-serif; background: #121212; color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; height: 100vh; margin: 0; }
-    #chat-container { width: 90%; max-width: 600px; margin-top: 20px; flex: 1; display: flex; flex-direction: column; overflow-y: auto; }
-    .message { margin: 5px 0; padding: 8px 12px; border-radius: 12px; max-width: 80%; }
-    .user { background: #1e88e5; align-self: flex-end; }
-    .bot { background: #333; align-self: flex-start; }
-    #input-container { width: 90%; max-width: 600px; display: flex; margin-bottom: 20px; }
-    #input-container input { flex: 1; padding: 10px; border-radius: 8px; border: none; }
-    #input-container button { padding: 10px 15px; margin-left: 10px; border: none; border-radius: 8px; background: #1e88e5; color: #fff; cursor: pointer; }
-    #model-selector { margin-bottom: 10px; }
-  </style>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>AVJ COMMUNITY Chat</title>
+<style>
+    body {
+        margin: 0;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        background: linear-gradient(135deg, #1f1f2f, #2d2d3f);
+        color: #fff;
+        display: flex;
+        height: 100vh;
+        overflow: hidden;
+    }
+
+    /* Sidebar */
+    #sidebar {
+        width: 320px;
+        background: linear-gradient(to bottom, #11111f, #1b1b2e);
+        padding: 30px;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+        box-shadow: 5px 0 20px rgba(0,0,0,0.6);
+    }
+
+    /* Logo grande con coronas */
+    #logo {
+        font-size: 2.5rem;
+        font-weight: bold;
+        text-align: center;
+        margin-bottom: 25px;
+        color: gold;
+        text-shadow: 2px 2px 6px #000;
+    }
+
+    /* Selector y inputs */
+    select, input {
+        padding: 12px;
+        border-radius: 10px;
+        border: none;
+        background-color: #2d2d3f;
+        color: #fff;
+        font-size: 1rem;
+    }
+
+    button {
+        padding: 12px;
+        border-radius: 10px;
+        border: none;
+        background: #7c3aed;
+        color: white;
+        font-weight: bold;
+        cursor: pointer;
+        transition: all 0.2s ease;
+    }
+
+    button:hover {
+        background: #9966ff;
+    }
+
+    /* Chat container */
+    #chat-container {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 30px;
+        overflow-y: auto;
+        background: radial-gradient(circle at top left, #2b2b3c, #1f1f2f);
+    }
+
+    /* Mensajes */
+    .message {
+        max-width: 75%;
+        padding: 14px;
+        margin-bottom: 12px;
+        border-radius: 14px;
+        word-wrap: break-word;
+        box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+        transition: transform 0.2s ease;
+    }
+
+    .message:hover {
+        transform: scale(1.02);
+    }
+
+    .user { background-color: #4a90e2; align-self: flex-end; }
+    .chatgpt { background-color: #4a90e2; align-self: flex-start; }
+    .claude { background-color: #f39c12; align-self: flex-start; }
+    .gemini { background-color: #2ecc71; align-self: flex-start; }
+
+    /* Input de chat */
+    #input-area {
+        display: flex;
+        gap: 10px;
+        margin-top: auto;
+        padding: 10px 0;
+        border-top: 1px solid #444;
+    }
+
+    #input-area input {
+        flex: 1;
+        padding: 12px;
+        border-radius: 10px;
+        border: none;
+        outline: none;
+        background: #1e1e2f;
+        color: #fff;
+    }
+
+    /* Footer decorativo */
+    footer {
+        text-align: center;
+        font-size: 0.9rem;
+        padding: 12px;
+        color: #aaa;
+        background: #11111f;
+    }
+
+    /* Animación de título */
+    @keyframes glow {
+        0%, 100% { text-shadow: 0 0 10px gold; }
+        50% { text-shadow: 0 0 25px gold; }
+    }
+    #logo span {
+        display: inline-block;
+        animation: glow 2s infinite;
+    }
+</style>
 </head>
 <body>
-  <h1>AvjIAS Multi-IA Chat</h1>
+    <div id="sidebar">
+        <div id="logo">👑 AVJ COMMUNITY 👑</div>
+        <label>Elegir IA:</label>
+        <select id="ia-select">
+            <option value="chatgpt">ChatGPT 5.5</option>
+            <option value="claude">Claude 4.8</option>
+            <option value="gemini">Gemini 3.1</option>
+        </select>
+        <input id="input-message" placeholder="Escribe un mensaje..." />
+        <button id="clear-chat">Borrar chat</button>
+        <footer>© 2026 AVJ COMMUNITY</footer>
+    </div>
+    <div id="chat-container"></div>
+    <div id="input-area">
+        <input type="text" id="chatInput" placeholder="Escribe tu mensaje aquí..." />
+        <button id="sendBtn">Enviar</button>
+    </div>
 
-  <select id="model-selector">
-    <option value="chatgpt">ChatGPT 5.5</option>
-    <option value="claude">Claude 4.8</option>
-    <option value="gemini">Gemini 3.1</option>
-  </select>
+    <script>
+        const chatContainer = document.getElementById('chat-container');
+        const chatInput = document.getElementById('chatInput');
+        const inputMessage = document.getElementById('input-message');
+        const iaSelect = document.getElementById('ia-select');
+        const clearChatBtn = document.getElementById('clear-chat');
+        const sendBtn = document.getElementById('sendBtn');
 
-  <div id="chat-container"></div>
+        const localStorageKey = () => `chat_history_${iaSelect.value}`;
+        const histories = {
+            chatgpt: JSON.parse(localStorage.getItem('chat_history_chatgpt') || '[]'),
+            claude: JSON.parse(localStorage.getItem('chat_history_claude') || '[]'),
+            gemini: JSON.parse(localStorage.getItem('chat_history_gemini') || '[]')
+        };
 
-  <div id="input-container">
-    <input type="text" id="user-input" placeholder="Escribe un mensaje..." />
-    <button onclick="sendMessage()">Enviar</button>
-  </div>
+        function renderChat() {
+            chatContainer.innerHTML = '';
+            const currentIA = iaSelect.value;
+            (histories[currentIA] || []).forEach(msg => {
+                const div = document.createElement('div');
+                div.textContent = msg.text;
+                div.className = `message ${msg.ia || currentIA}`;
+                chatContainer.appendChild(div);
+            });
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
 
-  <script>
-    const chatContainer = document.getElementById('chat-container');
-    const userInput = document.getElementById('user-input');
-    const modelSelector = document.getElementById('model-selector');
+        function addMessage(text, ia, user=true) {
+            const currentIA = iaSelect.value;
+            const entry = { text, ia: currentIA };
+            histories[currentIA].push(entry);
+            localStorage.setItem(`chat_history_${currentIA}`, JSON.stringify(histories[currentIA]));
+            renderChat();
+        }
 
-    const histories = {
-      chatgpt: JSON.parse(localStorage.getItem('history_chatgpt') || '[]'),
-      claude: JSON.parse(localStorage.getItem('history_claude') || '[]'),
-      gemini: JSON.parse(localStorage.getItem('history_gemini') || '[]')
-    };
-
-    function renderMessages() {
-      chatContainer.innerHTML = '';
-      const currentModel = modelSelector.value;
-      histories[currentModel].forEach(msg => {
-        const div = document.createElement('div');
-        div.className = 'message ' + (msg.user ? 'user' : 'bot');
-        div.textContent = msg.text;
-        chatContainer.appendChild(div);
-      });
-      chatContainer.scrollTop = chatContainer.scrollHeight;
-    }
-
-    async function sendMessage() {
-      const text = userInput.value.trim();
-      if (!text) return;
-
-      const currentModel = modelSelector.value;
-      histories[currentModel].push({ user: true, text });
-      renderMessages();
-
-      userInput.value = '';
-      const endpoint = `/chat/${currentModel}`;
-
-      try {
-        const res = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ message: text })
+        sendBtn.addEventListener('click', () => {
+            const message = chatInput.value.trim();
+            if(!message) return;
+            addMessage(message, iaSelect.value, true);
+            chatInput.value = '';
+            // Simular llamada API (después reemplazar con fetch a tu backend)
+            setTimeout(() => {
+                addMessage(`Respuesta de ${iaSelect.value} a: "${message}"`, iaSelect.value, false);
+            }, 800);
         });
-        const data = await res.json();
-        histories[currentModel].push({ user: false, text: data.reply });
-        localStorage.setItem('history_' + currentModel, JSON.stringify(histories[currentModel]));
-        renderMessages();
-      } catch (err) {
-        histories[currentModel].push({ user: false, text: 'Error: no se pudo conectar con la IA.' });
-        renderMessages();
-      }
-    }
 
-    modelSelector.addEventListener('change', renderMessages);
-    renderMessages();
-  </script>
+        chatInput.addEventListener('keypress', (e) => {
+            if(e.key === 'Enter') sendBtn.click();
+        });
+
+        iaSelect.addEventListener('change', renderChat);
+        clearChatBtn.addEventListener('click', () => {
+            const currentIA = iaSelect.value;
+            histories[currentIA] = [];
+            localStorage.setItem(`chat_history_${currentIA}`, '[]');
+            renderChat();
+        });
+
+        renderChat();
+    </script>
 </body>
 </html>
